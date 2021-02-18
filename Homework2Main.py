@@ -1,46 +1,57 @@
-##import cv2 as cv
-##import numpy as np
-##
-##src = cv.imread("japaneseflowers.jpg", 1)
-##if src is None:
-##    print("missing image")
-##
-##cv.imshow("windoMy", src)
-### else:
-###     gray = cv.cvtColor(src, cv.COLOR_RGB2GRAY)
-###     final = cv.Canny(gray, 75,200)
-###     cv.imshow("Original", gray)
-###     cv.imshow("adaptive", final)
-
-##import cv2 as cv
-##import numpy as np
-##
-##src = cv.imread("japaneseflowers.jpg", 1)
-##if src is None:
-##    print("missing image")
-##else:
-##    gray = cv.cvtColor(src, cv.COLOR_RGB2GRAY)
-##    final = cv.Canny(gray, 75,200)
-##    cv.imshow("Original", gray)
-##    cv.imshow("adaptive", final)   
-
 import numpy as np
 import cv2
+#----------------------------
+def placeHolder(blank): #not sure if necessary
+    pass
+        
+def getHSV(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        hsv_arr = hsv[y,x]
+        print("HSV:", hsv_arr)
 
-cap = cv2.VideoCapture(0)
+#----------------------------
+
+vidCap = cv2.VideoCapture(0)
+
+cv2.namedWindow('Sliders', cv2.WINDOW_NORMAL)
+cv2.resizeWindow('Sliders', 550, 300)
+
+cv2.createTrackbar("0H - 180H", 'Sliders', 0, 180, placeHolder)
+cv2.createTrackbar("MaxH - 180H", 'Sliders', 180, 180, placeHolder)
+cv2.createTrackbar("0S - 255S", 'Sliders', 0, 255, placeHolder)
+cv2.createTrackbar("MaxS - 255S", 'Sliders', 255, 255, placeHolder)
+cv2.createTrackbar("0V - 255V", 'Sliders', 0, 255, placeHolder)
+cv2.createTrackbar("MaxV - 255V", 'Sliders', 255, 255, placeHolder)
 
 while(True):
-    # Capture frame-by-frame
-    ret, frame = cap.read()
+    ret, frame = vidCap.read()
 
-    # Our operations on the frame come here
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Display the resulting frame
-    cv2.imshow('frame')
+    minH = cv2.getTrackbarPos('0H - 180H', 'Sliders')
+    maxH = cv2.getTrackbarPos('MaxH - 180H', 'Sliders')
+    minS = cv2.getTrackbarPos('0S - 255S', 'Sliders')
+    maxS = cv2.getTrackbarPos('MaxS - 255S', 'Sliders')
+    minV = cv2.getTrackbarPos('0V - 255V', 'Sliders')
+    maxV = cv2.getTrackbarPos('MaxV - 255V', 'Sliders')
+
+    low = np.array([minH, minS, minV])
+    high = np.array([maxH, maxS, maxV])
+
+    mask = cv2.inRange(hsv, low, high)
+    hsv_filter = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+
+    cv2.imshow('frame', hsv)
+    cv2.setMouseCallback('frame', getHSV)
+
+    hsv_ind_frames = np.concatenate((hsv_filter, frame), axis = 1)
+    cv2.imshow('H, S, and V Frames', cv2.resize(hsv_ind_frames, None, fx=.7, fy=.7))
+    
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# When everything done, release the capture
-cap.release()
+vidCap.release()
 cv2.destroyAllWindows()
+
+
+
