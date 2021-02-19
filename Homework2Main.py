@@ -9,7 +9,13 @@ def getHSV(event, x, y, flags, param):
         hsv_arr = hsv[y,x]
         print("HSV:", hsv_arr)
 
-#----------------------------
+def erosion(val):
+    pass
+
+def dilation(val):
+    pass
+
+#----------------------------Part One-----------------
 
 vidCap = cv2.VideoCapture(0)
 
@@ -23,7 +29,7 @@ cv2.createTrackbar("MaxS - 255S", 'Sliders', 255, 255, placeHolder)
 cv2.createTrackbar("0V - 255V", 'Sliders', 0, 255, placeHolder)
 cv2.createTrackbar("MaxV - 255V", 'Sliders', 255, 255, placeHolder)
 
-while(True):
+while True:
     ret, frame = vidCap.read()
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -41,6 +47,9 @@ while(True):
     mask = cv2.inRange(hsv, low, high)
     hsv_filter = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
 
+    hsv_filter = cv2.dilate(hsv_filter, None, iterations = 10)
+    hsv_filter = cv2.erode(hsv_filter, None, iterations = 10)
+
     cv2.imshow('frame', hsv)
     cv2.setMouseCallback('frame', getHSV)
 
@@ -52,6 +61,5 @@ while(True):
 
 vidCap.release()
 cv2.destroyAllWindows()
-
 
 
